@@ -52,27 +52,30 @@ rtetris_gameboy_step <- function(preview_piece, falling_piece){
   return(output)
 }
 
+
 rtetris <- function(n, algo = "gameboy", verbose = TRUE) {
   if (!algo %in% c("nes", "gameboy", "modern")) {
     stop("algorithm not specificed: nes, gameboy, or modern")
   }
   tetrominoes <- c("L", "J", "I", "O", "Z", "S", "T")
   if (algo == "nes") {
-    x <- rep(NA, n)
+    x <- rep(NA, (n + 1))
     x[1] <- sample(tetrominoes, 1)
-    for (j in 2:n) {
+    for (j in 2:(n + 1)) {
       x[j] <- rtetris_nes_step(preview_piece = x[j - 1])
       if (verbose & j %% 1000 == 0) print(j)
     }
+    x <- x[2:(n + 1)]
   }
   if (algo == "gameboy") {
-    x <- rep(NA, n)
+    x <- rep(NA, (n + 2))
     x[1] <- sample(tetrominoes, 1)
     x[2] <- sample(tetrominoes, 1)
-    for (j in 3:n) {
-      x[j] <- rtetris_gameboy_step(preview_piece = x[j - 2], falling_piece = x[j - 1])
+    for (j in 3:(n + 2)) {
+      x[j] <- rtetris_gameboy_step(preview_piece = x[j - 1], falling_piece = x[j - 2])
       if (verbose & j %% 1000 == 0) print(j)
     }
+    x <- x[3:(n + 2)]
   }
   if (algo == "modern") {
     n_sets <- ceiling(n / 7)
