@@ -1,5 +1,5 @@
 
-lookup_piece <- function(x){
+gameboy_lookup_piece <- function(x){
   if(identical(x, c(0, 0, 0))) output <- "L"
   if(identical(x, c(0, 0, 1))) output <- "J"
   if(identical(x, c(0, 1, 0))) output <- "I"
@@ -10,52 +10,75 @@ lookup_piece <- function(x){
   return(output)
 }
 
-rtetris <- function(n, init = NA, algo = "gameboy") {
-  if(algo != "gameboy"){
-    tetrominoes <- c("L", "J", "I", "O", "Z", "S", "T")
-    x <- sample(tetrominoes, n, replace = TRUE)
+rtetris_nes_step <- function(preview_piece){
+  tetrominoes <- c("T", "J", "Z", "O", "S", "L", "I")
+  tetrominoeID <- c(2, 7, 8, 10, 11, 14, 18)
+  previewID <- tetrominoeID[which(tetrominoes == preview_piece)]
+  index <- sample(1:8, 1)
+  if (index != 8) {
+    candidateID <- tetrominoeID[index]
+    if (candidateID == previewID) {
+      index <- sample(1:8, 1)
+      index <- index + previewID
+      index <- index %% 7 + 1
+      candidateID <- tetrominoeID[index]
+    }
+  } else {
+    index <- sample(1:8, 1)
+    index <- index + previewID
+    index <- index %% 7 + 1
+    candidateID <- tetrominoeID[index]
   }
-  if(algo == "gameboy"){
+  out <- tetrominoes[which(tetrominoeID == candidateID)]
+  return(out)
+}
+
+rtetris_gameboy_step <- function(preview_piece, falling_piece){
+  tetrominoes <- c("L", "J", "I", "O", "Z", "S", "T")
+  tetrominoeID <- list(c(0, 0, 0), c(0, 0, 1), c(0, 1, 0), c(0, 1, 1), c(1, 0, 0), c(1, 0, 1), c(1, 1, 0))
+  previewID <- tetrominoeID[[which(tetrominoes == preview_piece)]]
+  fallingID <- tetrominoeID[[which(tetrominoes == falling_piece)]]
+  index <- sample(1:7, 1)
+  candidateID <- tetrominoeID[[index]]
+  if (all((fallingID | previewID | candidateID) == fallingID)) {
+    index <- sample(1:7, 1)
+    candidateID <- tetrominoeID[[index]]
+    if (all((fallingID | previewID | candidateID) == fallingID)) {
+      index <- sample(1:7, 1)
+      candidateID <- tetrominoeID[[index]]
+    }
+  }
+  output <- gameboy_lookup_piece(candidateID)
+  return(output)
+}
+
+rtetris <- function(n, algo = "gameboy", verbose = TRUE) {
+  if (!algo %in% c("nes", "gameboy", "modern")) {
+    stop("algorithm not specificed: nes, gameboy, or modern")
+  }
+  tetrominoes <- c("L", "J", "I", "O", "Z", "S", "T")
+  if (algo == "nes") {
+    x <- rep(NA, n)
+    x[1] <- sample(tetrominoes, 1)
+    for (j in 2:n) {
+      x[j] <- rtetris_nes_step(preview_piece = x[j - 1])
+      if (verbose & j %% 1000 == 0) print(j)
+    }
+  }
+  if (algo == "gameboy") {
+    x <- rep(NA, n)
+    x[1] <- sample(tetrominoes, 1)
+    x[2] <- sample(tetrominoes, 1)
+    for (j in 3:n) {
+      x[j] <- rtetris_gameboy_step(preview_piece = x[j - 2], falling_piece = x[j - 1])
+      if (verbose & j %% 1000 == 0) print(j)
+    }
+  }
+  if (algo == "modern") {
+    n_sets <- ceiling(n / 7)
     tetrominoes <- c("L", "J", "I", "O", "Z", "S", "T")
-    combos <- paste(rep(tetrominoes, each = 7), rep(tetrominoes, times = 7), sep = "")
-    possible <- list(c(0, 0, 0), c(0, 0, 1), c(0, 1, 0), c(0, 1, 1), c(1, 0, 0), c(1, 0, 1), c(1, 1, 0))
-    names(possible) <- tetrominoes
-    if(is.na(init)){
-      locking <- possible[[sample(tetrominoes, 1)]]
-      preview <- possible[[sample(tetrominoes, 1)]]
-    } else {
-      if(init %in% combos){
-        locking <- possible[[substr(init, 1, 1)]]
-        preview <- possible[[substr(init, 2, 2)]]
-      } else {
-        stop("init is invalid")
-      }
-    }
-    candidate <- possible[[sample(tetrominoes, 1)]]
-    x <- rep(NA, length(n))
-    first.counter <- 0
-    second.counter <- 0
-    third.counter <- 0
-    for(j in 1:n){
-      if(any((locking | preview | candidate) != locking)){
-        x[j] <- lookup_piece(candidate)
-        first.counter <- first.counter + 1
-      } else {
-        candidate <- possible[[sample(tetrominoes, 1)]]
-        if(any((locking | preview | candidate) != locking)){
-          x[j] <- lookup_piece(candidate)
-          second.counter <- second.counter + 1
-        } else {
-          candidate <- possible[[sample(tetrominoes, 1)]]
-          x[j] <- lookup_piece(candidate)
-          third.counter <- third.counter + 1
-        }
-      }
-      locking <- preview
-      preview <- candidate
-      candidate <- possible[[sample(tetrominoes, 1)]]
-      if(j %% 1000 == 0) print(j) 
-    }
+    x <- as.vector(replicate(n_sets, sample(tetrominoes)))
+    x <- x[1:n]
   }
   return(x)
 }
