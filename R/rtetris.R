@@ -54,7 +54,7 @@ rtetris_gameboy_step <- function(preview_piece, falling_piece){
 
 
 rtetris <- function(n, algo = "gameboy", verbose = TRUE) {
-  if (!algo %in% c("nes", "gameboy", "modern")) {
+  if (!algo %in% c("nes", "gameboy", "modern", "uniform")) {
     stop("algorithm not specificed: nes, gameboy, or modern")
   }
   tetrominoes <- c("L", "J", "I", "O", "Z", "S", "T")
@@ -82,6 +82,9 @@ rtetris <- function(n, algo = "gameboy", verbose = TRUE) {
     tetrominoes <- c("L", "J", "I", "O", "Z", "S", "T")
     x <- as.vector(replicate(n_sets, sample(tetrominoes)))
     x <- x[1:n]
+  }
+  if (algo == "uniform") {
+    x <- sample(tetrominoes, n, replace = TRUE)
   }
   return(x)
 }
