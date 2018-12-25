@@ -21,7 +21,7 @@ dtetris <- function(x, algo = "uniform", log = TRUE){
         function(z) pr_nes1989(x = next_piece[z], state = preview_piece[z], log = TRUE)
       })
     }
-    out <- log(1/7) + sum(log_liks)
+    out <- c(log(1/7), log_liks)
   }
   if (algo == "gb1989") {
     log_liks <- 0
@@ -34,7 +34,7 @@ dtetris <- function(x, algo = "uniform", log = TRUE){
         function(z) pr_gb1989(x = next_piece[z], state = states[z], log = TRUE)
       })
     }
-    out <- 2 * log(1/7) + sum(log_liks)
+    out <- c(log(1/7), log(1/7), log_liks)
   }
   if (algo == "7-bag") {
     n_full_bags <- floor(length(x) / 7)
@@ -48,8 +48,7 @@ dtetris <- function(x, algo = "uniform", log = TRUE){
     if (n_last_bag > 0) {
       log_lik_left <- n_last_bag * log(1/7)
     }
-    log_lik <- c(log_lik_left, log_lik_full)
-    out <- sum(log_lik)
+    out <- c(log_lik_left, log_lik_full)
     full_bags_balanced <- all(table(x_full) == n_full_bags)
     if (!full_bags_balanced){
       out <- log(0)
