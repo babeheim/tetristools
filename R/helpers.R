@@ -72,7 +72,6 @@ pr_gb1989 <- function(x, state, log = FALSE) {
       0.14319, 0.14266, 0.14245, 0.14341, 0.14320, 0.14281, 0.14228,
       0.19457, 0.19458, 0.01217, 0.19424, 0.19717, 0.19536, 0.01192),
     ncol = 7, byrow = TRUE)
-  tetrominoes <- c("I", "J", "L", "O", "S", "T", "Z")
   states <- c(
     "II", "IJ", "IL", "IO", "IS", "IT", "IZ",
     "JI", "JJ", "JL", "JO", "JS", "JT", "JZ",
@@ -82,7 +81,8 @@ pr_gb1989 <- function(x, state, log = FALSE) {
     "TI", "TJ", "TL", "TO", "TS", "TT", "TZ",
     "ZI", "ZJ", "ZL", "ZO", "ZS", "ZT", "ZZ")
   state_i <- match(state, states)
-  x_i <- match(x, index)
+  tetrominoes <- c("I", "J", "L", "O", "S", "T", "Z")
+  x_i <- match(x, tetrominoes)
   out <- transition_probabilities[state_i, x_i]
   if (log == TRUE) out <- log(out)
   return(out)

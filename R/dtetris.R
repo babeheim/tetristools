@@ -9,8 +9,7 @@ dtetris <- function(x, algo = "uniform", log = TRUE){
   }
   if (algo == "uniform") {
     n <- length(x)
-    log_liks <- n * log(1/7)
-    out <- sum(log_liks)
+    out <- rep(log(1/7), n)
   }
   if (algo == "nes1989") {
     log_liks <- numeric(0)
@@ -46,10 +45,13 @@ dtetris <- function(x, algo = "uniform", log = TRUE){
     }
     log_lik_left <- numeric(0)
     if (n_last_bag > 0) {
-      log_lik_left <- n_last_bag * log(1/7)
+      log_lik_left <- rep(log(1/7), n_last_bag)
     }
-    out <- c(log_lik_left, log_lik_full)
+    out <- c(log_lik_full, log_lik_left)
     full_bags_balanced <- all(table(x_full) == n_full_bags)
+    if (full_bags_balanced){
+      warning("7-bag log-likelihoods are necessarily aggregated")
+    }
     if (!full_bags_balanced){
       out <- log(0)
       warning("this data could not have come from a 7-bag; probability is 0!")
