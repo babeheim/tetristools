@@ -1,4 +1,27 @@
 
+# this is overly simple, since it doesn't involve the additoin of the orientation hex values
+rtetris_nes_step_simple <- function(last_piece){
+  tetrominoes <- c("T", "J", "Z", "O", "S", "L", "I")
+  candidate <- sample(tetrominoes, 1)
+  if (candidate == last_piece) candidate <- sample(tetrominoes, 1)
+  return(candidate)
+}
+
+rtetris_nes_step <- function(last_piece) {
+  tetrominoes <- c("T", "J", "Z", "O", "S", "L", "I")
+  orientationID <- c(2, 7, 8, 10, 11, 14, 18) # numeric address for each piece
+  lastID <- orientationID[which(tetrominoes == last_piece)]
+  index <- sample(0:7, 1)
+  next_piece <- tetrominoes[index]
+  if (index == 0 || next_piece == last_piece) {
+    index <- sample(0:7, 1)
+    index <- index + lastID # introduces small biases
+    index <- index %% 7
+    next_piece <- tetrominoes[index + 1]
+  }
+  return(next_piece)
+}
+
 gameboy_lookup_piece <- function(x){
   if(identical(x, c(0, 0, 0))) output <- "L"
   if(identical(x, c(0, 0, 1))) output <- "J"
@@ -8,29 +31,6 @@ gameboy_lookup_piece <- function(x){
   if(identical(x, c(1, 0, 1))) output <- "S"
   if(identical(x, c(1, 1, 0))) output <- "T"
   return(output)
-}
-
-rtetris_nes_step <- function(preview_piece){
-  tetrominoes <- c("T", "J", "Z", "O", "S", "L", "I")
-  tetrominoeID <- c(2, 7, 8, 10, 11, 14, 18)
-  previewID <- tetrominoeID[which(tetrominoes == preview_piece)]
-  index <- sample(1:8, 1)
-  if (index != 8) {
-    candidateID <- tetrominoeID[index]
-    if (candidateID == previewID) {
-      index <- sample(1:8, 1)
-      index <- index + previewID
-      index <- index %% 7 + 1
-      candidateID <- tetrominoeID[index]
-    }
-  } else {
-    index <- sample(1:8, 1)
-    index <- index + previewID
-    index <- index %% 7 + 1
-    candidateID <- tetrominoeID[index]
-  }
-  out <- tetrominoes[which(tetrominoeID == candidateID)]
-  return(out)
 }
 
 rtetris_gameboy_step <- function(preview_piece, falling_piece){
@@ -52,17 +52,16 @@ rtetris_gameboy_step <- function(preview_piece, falling_piece){
   return(output)
 }
 
-
-rtetris <- function(n, algo = "gameboy", verbose = TRUE) {
+rtetris <- function(n, algo = "gameboy", verbose = FALSE) {
   if (!algo %in% c("nes", "gameboy", "modern", "uniform")) {
-    stop("algorithm not specificed: nes, gameboy, or modern")
+    stop("algorithm not specified: nes, gameboy, or modern")
   }
   tetrominoes <- c("L", "J", "I", "O", "Z", "S", "T")
   if (algo == "nes") {
     x <- rep(NA, (n + 1))
     x[1] <- sample(tetrominoes, 1)
     for (j in 2:(n + 1)) {
-      x[j] <- rtetris_nes_step(preview_piece = x[j - 1])
+      x[j] <- rtetris_nes_step(last_piece = x[j - 1])
       if (verbose & j %% 1000 == 0) print(j)
     }
     x <- x[2:(n + 1)]
