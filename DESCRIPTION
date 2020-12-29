@@ -3,8 +3,7 @@ Title: A Package to Analyze Patterns in Tetris Draws
 Version: 0.0.0.9000
 Authors@R: person("Bret", "Beheim", email = "beheim@gmail.com", role = c("aut", "cre"))
 Description: This package will estimate the chances of the seven Tetris pieces from strings of Tetris draws, and fit Markov models of first and second order to predict the next move with increased accuracy.
-Depends: R (>= 3.3.2),
-  rstan
+Depends: R (>= 3.3.2)
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
